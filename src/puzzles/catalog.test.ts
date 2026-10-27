@@ -12,7 +12,17 @@ describe("daily puzzle catalog", () => {
 
   it("accepts normalized words from the curated sample", () => {
     expect(isAllowedGuess("limão")).toBe(true);
+    expect(isAllowedGuess("LIMAO")).toBe(true);
     expect(isAllowedGuess("inventada")).toBe(false);
     expect(getAllowedGuesses().size).toBeGreaterThan(20);
+  });
+
+  it("returns a five-letter answer that is also an allowed guess", () => {
+    const puzzle = puzzleForDate(new Date("2026-10-20T12:00:00.000Z"));
+
+    expect(puzzle.id).toBe("2026-10-20");
+    expect([...puzzle.answer]).toHaveLength(5);
+    expect(isAllowedGuess(puzzle.answer)).toBe(true);
+    expect(puzzle.answer).toBe(puzzle.displayAnswer.normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
   });
 });

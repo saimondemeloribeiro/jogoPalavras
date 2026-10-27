@@ -10,4 +10,15 @@ describe("normalizeWord", () => {
     expect(isFiveLetterWord("limão")).toBe(true);
     expect(isFiveLetterWord("livro1")).toBe(false);
   });
+
+  it("normalizes uppercase and decomposed accents consistently", () => {
+    expect(normalizeWord("AÇÃO")).toBe("ACAO");
+    expect(normalizeWord("cafe\u0301")).toBe("CAFE");
+  });
+
+  it("rejects spaces, punctuation, and non-Latin scripts as five-letter words", () => {
+    expect(isFiveLetterWord(" dois")).toBe(false);
+    expect(isFiveLetterWord("a-bcd")).toBe(false);
+    expect(isFiveLetterWord("漢字あいう")).toBe(false);
+  });
 });

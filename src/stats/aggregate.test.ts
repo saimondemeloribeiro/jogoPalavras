@@ -24,4 +24,35 @@ describe("recordCompletedGame", () => {
     expect(afterGap.currentStreak).toBe(1);
     expect(afterGap.bestStreak).toBe(2);
   });
+
+  it("does not change statistics for a session still in progress", () => {
+    expect(recordCompletedGame(emptyStats, createSession("2026-10-20"))).toBe(emptyStats);
+  });
+
+  it("records losses once and resets the current streak without losing the best", () => {
+    const winningStats = recordCompletedGame(emptyStats, {
+      ...createSession("2026-10-19"),
+      status: "won",
+      guesses: [{ word: "PLUMA", marks: allCorrect }],
+    });
+    const loss = {
+      ...createSession("2026-10-20"),
+      status: "lost" as const,
+      guesses: ["PALCO", "LIVRO", "PEDRA", "FOLHA", "NUVEM", "MUNDO"].map((word) => ({
+        word,
+        marks: allCorrect,
+      })),
+    };
+
+    const updated = recordCompletedGame({ ...winningStats, currentStreak: 1, bestStreak: 1 }, loss);
+
+    expect(updated).toMatchObject({ played: 2, wins: 1, currentStreak: 0, bestStreak: 1 });
+    expect(updated.guessDistribution).toEqual([1, 0, 0, 0, 0, 0]);
+    expect(recordCompletedGame(updated, loss)).toBe(updated);
+    expect(winRate(updated)).toBe(50);
+  });
+
+  it("returns a zero win rate when no games have been played", () => {
+    expect(winRate(emptyStats)).toBe(0);
+  });
 });
